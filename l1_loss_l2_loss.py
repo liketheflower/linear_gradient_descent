@@ -7,32 +7,40 @@
 # else some gaussian noise will be added
 import numpy as np
 import random
+import matplotlib.pyplot as plt
 # number of samples
-N = 200
-w = 20
+N = 20
+INIT_w = 20
 # our target w is 1.0
 
+add_noise = False
 x = 2*np.ones((N,))
-y = 1.0*x
-
+if add_noise:
+    z = np.random.normal(0, 0.05, N)
+    y = 1.0*x + z
+else:
+    y = 1.0*x
 def loss(y_hat, y, loss='L1'):
     if loss=='L1':
+        print('L1 loss')
         return  np.sum(y_hat - y)
     elif loss == 'L2':
+        print('L2 loss')
         return np.sum(np.square(y_hat-y))
 
-
-epoches = 10
-batch_size = 4
+print(x)
+print(y)
+epoches = 20
+batch_size = 2
 batch_start_idx = list(range(0, N, batch_size))
 
 l1_losses, l2_losses = [], []
 w_l1_loss, w_l2_loss = [], []
 # set learning rate as 1.0
-lr = 0.00001
+lr = 0.01
 
 for loss_type in ['L1', 'L2']:
-    w = 20
+    w = INIT_w 
     for epoch in range(epoches):
         for batch_i in batch_start_idx:
             this_x, this_y = x[batch_i*batch_size:(batch_i+1)*batch_size], y[batch_i*batch_size:(batch_i+1)*batch_size]
@@ -44,7 +52,8 @@ for loss_type in ['L1', 'L2']:
                 # L = y_hat -y , dL/dy_hat = 1
                 # dy_hat/dw = x
                 # dL/dw = Loss *(1)*(x)
-                gradient = np.sum(L*x)
+                gradient = np.sum(x)
+                print(gradient)
                 w -= lr*gradient
                 w_l1_loss.append(w)
             elif loss_type == 'L2':
@@ -53,10 +62,39 @@ for loss_type in ['L1', 'L2']:
                 # L = (y_hat -y)**2 , dL/dy_hat = 2(y_hat - y)
                 # dy_hat/dw = x
                 # dL/dw = Loss *(2*(y_hat-y))*(x)
-                gradient = np.sum(L*2*(y_hat-this_y)*this_x)
+                gradient = np.sum(2*(y_hat-this_y)*this_x)
                 w -= lr*gradient
                 w_l2_loss.append(w)
 print(l1_losses)
 print(l2_losses)
 print(w_l1_loss)
 print(w_l2_loss)
+plt.plot(range(len(l1_losses)), l1_losses, c = 'r', label='L1 loss')
+plt.plot(range(len(l2_losses)), l2_losses, c = 'g', label='L2 loss')
+plt.xlabel('step')
+plt.ylabel('loss')
+if add_noise:
+    plt.title('initialize w:'+str(INIT_w)+' with noise')
+else:
+    plt.title('initialize w:'+str(INIT_w)+' without noise')
+plt.legend(loc='best')
+if add_noise:
+    plt.savefig('loss_l1_l2_with_noise.png')
+else:
+    plt.savefig('loss_l1_l2_without_noise.png')
+plt.show()
+plt.close()
+plt.plot(range(len(w_l1_loss)), w_l1_loss, c = 'r', label='L1 loss')
+plt.plot(range(len(w_l2_loss)), w_l2_loss, c = 'g', label='L2 loss')
+plt.xlabel('step')
+plt.ylabel('estimate w (target is 1)')
+if add_noise:
+    plt.title('initialize w:'+str(INIT_w)+' with noise')
+else:
+    plt.title('initialize w:'+str(INIT_w)+' without noise')
+plt.legend(loc='best')
+if add_noise:
+    plt.savefig('w_l1_l2_with_noise.png')
+else:
+    plt.savefig('w_l1_l2_without_noise.png')
+plt.show()
