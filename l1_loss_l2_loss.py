@@ -13,7 +13,7 @@ N = 20
 INIT_w = 20
 # our target w is 1.0
 
-add_noise = True
+add_noise = False
 x = 2*np.ones((N,))
 if add_noise:
     z = np.random.normal(0, 0.05, N)
